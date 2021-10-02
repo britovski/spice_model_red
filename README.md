@@ -10,3 +10,8 @@ spice_model_red.py input_file [section]
 ```
 
 It reads the `input_file` and writes an output file called `input_file.<section>.red`.
+
+Todo:
+
+* Add fail saves around file operations
+* Add better control of output during run, maybe add a `-v` switch
