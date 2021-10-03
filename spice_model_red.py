@@ -10,6 +10,7 @@
 import sys,re,os
 
 def process_file(file_in_name, top_file):
+    global is_warning
     try:
         f_in = open(file_in_name, 'r')
     except FileNotFoundError:
