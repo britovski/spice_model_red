@@ -10,7 +10,11 @@
 import sys,re,os
 
 def process_file(file_in_name, f_out, top_file, model_section):
-    f_in = open(file_in_name, 'r')
+    try:
+        f_in = open(file_in_name, 'r')
+    except FileNotFoundError:
+        print('Warning! File ' + file_in_name + ' not found.')
+        return;
 
     # process_file can be called recursively, so that nested include
     # files can be traversed
@@ -46,12 +50,15 @@ def process_file(file_in_name, f_out, top_file, model_section):
                         # includes work
                         current_wd = os.getcwd()
                         newfile = re.findall(r'"(.*?)(?<!\\)"', line_trim)
-                        print('Entering ',newfile[0])
+                        print('Reading ',newfile[0])
 
                         # enter new working dir
                         new_wd = os.path.dirname(newfile[0]) 
                         if len(new_wd) > 0:
-                            os.chdir(new_wd)
+                            try:
+                                os.chdir(new_wd)
+                            except OSError:
+                                print('Warning: Could not enter directory ' + new_wd)
 
                         # traverse into new include file
                         new_file_name = os.path.basename(newfile[0]) 
@@ -76,8 +83,17 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
     infile_name = sys.argv[1]
     outfile_name = infile_name + '.' + model_section + '.red'
 
-    f_out = open(outfile_name, 'w') 
+    try:
+        f_out = open(outfile_name, 'w')
+    except OSError:
+        print('Error: Cannot write file ' + outfile_name)
+        sys.exit(1)
+
     process_file(infile_name, f_out, True, model_section)
     f_out.close()
+    print()
+    print('Model file ' + outfile_name + ' written.')
+    sys.exit(0) 
 else:
-    print('Usage: spice_model_red <inputfile> [section] (default section = tt)')
+    print('Usage: spice_model_red <inputfile> [corner] (default corner = tt)')
+    sys.exit(2)
