@@ -9,11 +9,12 @@
 
 import sys,re,os
 
-def process_file(file_in_name, f_out, top_file, model_section):
+def process_file(file_in_name, top_file):
     try:
         f_in = open(file_in_name, 'r')
     except FileNotFoundError:
         print('Warning! File ' + file_in_name + ' not found.')
+        is_warning = True
         return;
 
     # process_file can be called recursively, so that nested include
@@ -59,10 +60,11 @@ def process_file(file_in_name, f_out, top_file, model_section):
                                 os.chdir(new_wd)
                             except OSError:
                                 print('Warning: Could not enter directory ' + new_wd)
+                                is_warning = True
 
                         # traverse into new include file
                         new_file_name = os.path.basename(newfile[0]) 
-                        process_file(new_file_name, f_out, False, model_section) 
+                        process_file(new_file_name, False) 
                         
                         # restore old working dir after return
                         os.chdir(current_wd)
@@ -86,14 +88,23 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
     try:
         f_out = open(outfile_name, 'w')
     except OSError:
-        print('Error: Cannot write file ' + outfile_name)
+        print('Error: Cannot write file ' + outfile_name + '.')
         sys.exit(1)
-
-    process_file(infile_name, f_out, True, model_section)
+    
+    is_warning = False
+    process_file(infile_name, True)
     f_out.close()
+    
     print()
     print('Model file ' + outfile_name + ' written.')
+    if is_warning == True:
+        print('There have been warnings! Please check output log.')
+
     sys.exit(0) 
 else:
+    print()
+    print('SPICE model file reducer. (c) 2021 Harald Pretl, JKU')
+    print()
     print('Usage: spice_model_red <inputfile> [corner] (default corner = tt)')
+    print()
     sys.exit(2)
